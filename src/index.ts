@@ -1,99 +1,73 @@
 import { defineStrategyPlugin } from "@tradejs/core/config";
 import { createStrategyConfigParser } from "@tradejs/strategy-kit/config";
 import type { ValidatedStrategyRegistryEntry } from "@tradejs/strategy-kit/config";
-import type {
-  CreateStrategyCore,
-  Signal,
-  StrategyConfig,
-  StrategyManifest,
-} from "@tradejs/types";
+import {
+  createImbalanceMomentumCore,
+  type ImbalanceMomentumConfig,
+} from "./core.js";
+import { BAR_MS } from "./engine.js";
+import { executionFigures } from "./figures.js";
 
-export const STRATEGY_NAME = "TemplateStrategy";
+export const STRATEGY_NAME = "ImbalanceMomentum";
 
-export interface TemplateStrategyConfig extends StrategyConfig {
-  INTERVAL?: Signal["interval"];
-  TEMPLATE_ENTRY_EVERY_BARS?: number;
-  TEMPLATE_QTY?: number;
-  TEMPLATE_TP_PCT?: number;
-  TEMPLATE_SL_PCT?: number;
-}
-
-export const defaultConfig: TemplateStrategyConfig = {
+const defaults: ImbalanceMomentumConfig = {
   INTERVAL: "15",
-  TEMPLATE_ENTRY_EVERY_BARS: 96,
-  TEMPLATE_QTY: 1,
-  TEMPLATE_TP_PCT: 0.4,
-  TEMPLATE_SL_PCT: 1,
+  IMBALANCE_MODE: "gap",
+  MAX_LOSS_VALUE: 10,
 };
 
-export const createTemplateStrategyCore: CreateStrategyCore<
-  TemplateStrategyConfig
-> = async ({ data, config, strategyApi }) => {
-  const entryEveryBars = Math.max(
-    1,
-    Math.floor(Number(config.TEMPLATE_ENTRY_EVERY_BARS ?? 96)),
-  );
+const parseDefaults = createStrategyConfigParser({
+  strategyName: STRATEGY_NAME,
+  defaults,
+});
 
-  return async (candle) => {
-    const previousCandle = data[data.length - 2];
-    if (!previousCandle || previousCandle.close <= 0) {
-      return strategyApi.skip("TEMPLATE_WAIT_PREVIOUS_CANDLE");
+const entry: ValidatedStrategyRegistryEntry<ImbalanceMomentumConfig> = {
+  defaults,
+  parseConfig(input) {
+    const config = parseDefaults(input);
+    if (config.INTERVAL !== "15") {
+      throw new Error("ImbalanceMomentum.INTERVAL must be 15");
     }
-    if (await strategyApi.getCurrentPosition()) {
-      return strategyApi.skip("TEMPLATE_POSITION_EXISTS");
+    if (
+      config.IMBALANCE_MODE !== "gap" &&
+      config.IMBALANCE_MODE !== "overlap"
+    ) {
+      throw new Error(
+        "ImbalanceMomentum.IMBALANCE_MODE must be gap or overlap",
+      );
     }
-    if (data.length % entryEveryBars !== 0) {
-      return strategyApi.skip("TEMPLATE_WAIT_ENTRY_SLOT");
+    if (!Number.isFinite(config.MAX_LOSS_VALUE) || config.MAX_LOSS_VALUE <= 0) {
+      throw new Error("ImbalanceMomentum.MAX_LOSS_VALUE must be positive");
     }
-
-    const qty = Number(config.TEMPLATE_QTY ?? 1);
-    if (!Number.isFinite(qty) || qty <= 0) {
-      return strategyApi.skip("TEMPLATE_INVALID_QTY");
-    }
-
-    const takeProfitPct = Number(config.TEMPLATE_TP_PCT ?? 0.4);
-    const stopLossPct = Number(config.TEMPLATE_SL_PCT ?? 1);
-    const { currentPrice, timestamp } =
-      await strategyApi.getDecisionPriceContext();
-
-    return strategyApi.entry({
-      code: "TEMPLATE_ENTRY",
-      direction: "LONG",
-      signalId: `template-${timestamp}`,
-      indicators: {
-        previousClose: previousCandle.close,
-        currentClose: candle.close,
+    return config;
+  },
+  manifest: {
+    name: STRATEGY_NAME,
+    hooks: {
+      afterPlaceOrder({ order, market }) {
+        const signal = order.result;
+        if (typeof signal === "string" || signal.orderStatus !== "completed") {
+          return;
+        }
+        const execution = signal.additionalIndicators?.backtestExecution;
+        const timestamp =
+          execution?.executionTimestamp ?? market.candle.timestamp + BAR_MS;
+        Object.assign(
+          signal.figures,
+          executionFigures(
+            timestamp,
+            signal.prices.currentPrice,
+            signal.prices.stopLossPrice,
+          ),
+        );
       },
-      orderPlan: {
-        qty,
-        stopLossPrice: currentPrice * (1 - stopLossPct / 100),
-        takeProfits: [
-          {
-            price: currentPrice * (1 + takeProfitPct / 100),
-            rate: 1,
-          },
-        ],
-      },
-    });
-  };
-};
-
-const manifest: StrategyManifest = {
-  name: STRATEGY_NAME,
-};
-
-const strategyEntry: ValidatedStrategyRegistryEntry<TemplateStrategyConfig> = {
-  defaults: defaultConfig,
-  parseConfig: createStrategyConfigParser({
-    strategyName: STRATEGY_NAME,
-    defaults: defaultConfig,
-  }),
-  manifest,
-  createCore: createTemplateStrategyCore,
+    },
+  },
+  createCore: createImbalanceMomentumCore,
 };
 
 export const strategyEntries = defineStrategyPlugin({
-  strategyEntries: [strategyEntry],
+  strategyEntries: [entry],
 }).strategyEntries;
 
 export default defineStrategyPlugin({ strategyEntries });

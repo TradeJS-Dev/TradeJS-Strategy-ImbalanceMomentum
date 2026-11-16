@@ -1,8 +1,8 @@
 {
-  "name": "@tradejs/strategy-template",
+  "name": "@tradejs/strategy-imbalance-momentum",
   "version": "0.0.0-development",
   "private": true,
-  "description": "Repository template for an independently versioned TradeJS strategy package.",
+  "description": "H4 momentum strategy with a three-candle imbalance and an overlap control.",
   "keywords": [
     "ai",
     "claude",

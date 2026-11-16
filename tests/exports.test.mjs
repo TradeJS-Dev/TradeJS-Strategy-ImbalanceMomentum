@@ -10,8 +10,8 @@ test("exports the TradeJS strategy plugin contract", () => {
     strategyEntries[0].defaults,
   );
   assert.throws(
-    () => strategyEntries[0].parseConfig({ TEMPLATE_QYT: 1 }),
-    /TemplateStrategy\.TEMPLATE_QYT is not allowed/,
+    () => strategyEntries[0].parseConfig({ IMBALANCE_MOD: 1 }),
+    /ImbalanceMomentum\.IMBALANCE_MOD is not allowed/,
   );
   assert.deepEqual(plugin.strategyEntries, strategyEntries);
 });

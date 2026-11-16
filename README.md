@@ -1,38 +1,31 @@
-# TradeJS Strategy Template
+# ImbalanceMomentum
 
-Repository template for one independently versioned TradeJS strategy package.
-The package exports `strategyEntries`, which can be registered from
-`tradejs.config.ts`.
+Стратегия TradeJS по мотивам [исследования Empirix](https://empirix.ru/vsa-path-of-least-resistance/). Пакет экспортирует `strategyEntries`.
 
-The checked-in example is intentionally non-publishable. Before the first
-release:
+## Сигнал
 
-1. Replace the package name, description, strategy name, and defaults.
-2. Choose the correct license and add its license file.
-3. Set `private` to `false`.
-4. Keep `strategyEntries` as the stable public plugin export.
-5. Define strict config defaults and keep the generated `parseConfig` contract
-   test green.
-6. Configure the npm trusted publisher for the concrete GitHub repository.
+Стратегия собирает каждую H4-свечу из 16 закрытых M15-свечей по границам UTC. При пропуске M15 она сбрасывает историю расчёта. Вторая из трёх последовательных H4-свечей задаёт сторону. Цвет первой и третьей свечей может быть любым.
 
-For the standard case, one repository publishes one strategy package. A grouped
-repository may export more than one entry only when the architecture catalog
-records an explicit exception, as it does for TrendLine and ReverseTrendLine.
+- `IMBALANCE_MODE: "gap"` требует направленный разрыв между диапазонами первой и третьей свечей. Внутри тела второй свечи должно лежать строго больше половины её тела. Равенство на границе с учётом точности чисел JavaScript сигнал не даёт.
+- `IMBALANCE_MODE: "overlap"` требует пересечение или касание диапазонов первой и третьей свечей. Любой зазор между диапазонами исключает сигнал контроля.
 
-## Development
+Сила импульса равна абсолютному размеру тела второй свечи, делённому на ATR H4 по состоянию на закрытие первой свечи. ATR(14) здесь равен простому среднему 14 значений истинного диапазона. Эта формула позволяет восстановить значение из ограниченной истории. Для сигнала нужны 17 последовательных H4-свечей.
 
-```bash
+## Исполнение
+
+Сигнал появляется при закрытии третьей H4-свечи. В бэктесте штатная отложенная заявка исполняется на открытии первой доступной M15-свечи после сигнала с учётом заданного проскальзывания. При открытой позиции новые сигналы пропускаются.
+
+Начальный стоп отстоит от фактической цены входа на `1R = 3 × ATR(14) H4`. ATR фиксируется на закрытии третьей свечи. Размер позиции равен `MAX_LOSS_VALUE / 1R` до округления количества инструментом. Значение `MAX_LOSS_VALUE` по умолчанию равно 10 USDT риска по движению цены до расходов. Фиксированной цели нет.
+
+На закрытии каждой M15-свечи стратегия проверяет лучший максимум для лонга или минимум для шорта с момента входа. При достижении `3R` она ставит стоп с отступом `1R` от этого экстремума. Затем стоп движется только в сторону уменьшения риска. TradeJS проверяет действующий стоп на текущей свече до вызова стратегии. Стоп, обновлённый на её закрытии, начинает действовать со следующей свечи. Касание нового уровня внутри свечи обновления не считается выходом.
+
+Empirix публикует порог активации трейлинга. Период ATR(14), простое среднее истинного диапазона, отступ `1R` и обработка экстремумов по закрытым M15-свечам — параметры этой реализации. После перезапуска сигналы восстанавливаются из закрытых свечей. Для уже открытой позиции движок может восстановить исходный риск по начальному стопу. Если стоп уже подтянут за цену входа, действующая защита сохраняется, а дальнейшее подтягивание требует исходного `1R`, который биржевая позиция не хранит.
+
+Штатный вход требует локальных изменений TradeJS для `takeProfits: []` и `stopLossDistance`. Проект для бэктеста должен использовать сборки `@tradejs/core` и `@tradejs/node` с этими изменениями.
+
+## Проверки
+
+```sh
 yarn install --immutable
 yarn checks
 ```
-
-CI and release callers are deliberately thin. The implementation is owned by
-`TradeJS-Workflows` and pinned through its stable `v1` ref. Concrete package
-repositories publish a verified beta for relevant pushes and promote only the
-current verified beta to stable `latest` through the weekly automation.
-
-Keywords: ai, claude, codex.
-
-## Runtime host contract
-
-All `@tradejs/*` runtime packages are peer dependencies. The consuming TradeJS Project owns their exact installed versions and package manifest, so this package never loads a hidden nested engine, types package, indicator package, or Strategy Kit. Repository builds use matching dev dependencies only.

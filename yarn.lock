@@ -425,19 +425,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-kit@npm:^3.0.1":
-  version: 3.0.6
-  resolution: "@tradejs/strategy-kit@npm:3.0.6"
-  peerDependencies:
-    "@tradejs/core": ^3.0.1
-    "@tradejs/types": ^3.0.1
-  checksum: 10c0/8103071826157d0ce6f4ddd0738a19eeec6b0390163c7dfbcc8074be670241452410ee0c42e3a1bc9af23bd5b5dc0d0831ba96c01aafec5ddce49e499babfd47
-  languageName: node
-  linkType: hard
-
-"@tradejs/strategy-template@workspace:.":
+"@tradejs/strategy-imbalance-momentum@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@tradejs/strategy-template@workspace:."
+  resolution: "@tradejs/strategy-imbalance-momentum@workspace:."
   dependencies:
     "@tradejs/core": "npm:^3.0.1"
     "@tradejs/strategy-kit": "npm:^3.0.1"
@@ -451,6 +441,16 @@ __metadata:
     "@tradejs/types": ^3.0.1
   languageName: unknown
   linkType: soft
+
+"@tradejs/strategy-kit@npm:^3.0.1":
+  version: 3.0.6
+  resolution: "@tradejs/strategy-kit@npm:3.0.6"
+  peerDependencies:
+    "@tradejs/core": ^3.0.1
+    "@tradejs/types": ^3.0.1
+  checksum: 10c0/8103071826157d0ce6f4ddd0738a19eeec6b0390163c7dfbcc8074be670241452410ee0c42e3a1bc9af23bd5b5dc0d0831ba96c01aafec5ddce49e499babfd47
+  languageName: node
+  linkType: hard
 
 "@tradejs/types@npm:^3.0.1, @tradejs/types@npm:^3.1.28":
   version: 3.1.28
