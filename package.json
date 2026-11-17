@@ -1,6 +1,6 @@
 {
   "name": "@tradejs/strategy-imbalance-momentum",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "H4 momentum strategy with a three-candle imbalance and an overlap control.",
   "keywords": [
     "ai",
