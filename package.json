@@ -25,7 +25,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@tradejs/core": "^3.1.29-beta.302",
-    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/strategy-kit": "^3.0.7",
     "@tradejs/types": "^3.1.29-beta.302",
     "prettier": "^3.6.2",
     "tsup": "^8.5.1",
@@ -45,7 +45,7 @@
   "license": "UNLICENSED",
   "peerDependencies": {
     "@tradejs/core": "^3.1.29-beta.302",
-    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/strategy-kit": "^3.0.7",
     "@tradejs/types": "^3.1.29-beta.302"
   },
   "repository": {
