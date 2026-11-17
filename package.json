@@ -1,7 +1,6 @@
 {
   "name": "@tradejs/strategy-imbalance-momentum",
-  "version": "0.0.0-development",
-  "private": true,
+  "version": "0.0.0",
   "description": "H4 momentum strategy with a three-candle imbalance and an overlap control.",
   "keywords": [
     "ai",
@@ -25,9 +24,9 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@tradejs/core": "^3.0.1",
-    "@tradejs/strategy-kit": "^3.0.1",
-    "@tradejs/types": "^3.0.1",
+    "@tradejs/core": "^3.1.29-beta.302",
+    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/types": "^3.1.29-beta.302",
     "prettier": "^3.6.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.2"
@@ -45,8 +44,12 @@
   },
   "license": "UNLICENSED",
   "peerDependencies": {
-    "@tradejs/core": "^3.0.1",
-    "@tradejs/strategy-kit": "^3.0.1",
-    "@tradejs/types": "^3.0.1"
+    "@tradejs/core": "^3.1.29-beta.302",
+    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/types": "^3.1.29-beta.302"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TradeJS-Dev/TradeJS-Strategy-ImbalanceMomentum.git"
   }
 }

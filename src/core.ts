@@ -88,7 +88,7 @@ export const createImbalanceMomentumCore: CreateStrategyCore<
     const stopLossPrice = currentPrice - side * stopLossDistance;
     if (stopLossPrice <= 0) return strategyApi.skip("IMBALANCE_INVALID_STOP");
 
-    const orderPlan: StrategyEntryOrderPlan & { stopLossDistance: number } = {
+    const orderPlan: StrategyEntryOrderPlan = {
       qty: config.MAX_LOSS_VALUE / stopLossDistance,
       stopLossPrice,
       stopLossDistance,
